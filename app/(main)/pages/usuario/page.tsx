@@ -31,7 +31,7 @@ const Crud = () => {
         email: ''
     };
 
-    const [usuarios, setUsuarios] = useState(null);
+    const [usuarios, setUsuarios] = useState<Projeto.Usuario[]>([]);
     const [usuarioDialog, setUsuarioDialog] = useState(false);
     const [deleteUsuarioDialog, setDeleteUsuarioDialog] = useState(false);
     const [deleteUsuariosDialog, setDeleteUsuariosDialog] = useState(false);
@@ -44,15 +44,16 @@ const Crud = () => {
     const usuarioService = new UsuarioService();
 
     useEffect(() => {
-        //ProductService.getProducts().then((data) => setProducts(data as any));
-        usuarioService.listarTodos()
-            .then((response) => {
-                setUsuarios(response.data);
-                console.log(response);
-        }).catch((error) => {
+        if (usuarios?.length == 0) {
+            usuarioService.listarTodos()
+                .then((response) => {
+                    console.log(response);
+                    setUsuarios(response.data);
+                }).catch((error) => {
                 console.log(error);
-        });
-    }, []);
+            });
+        }
+    }, [usuarios]);
 
     // const formatCurrency = (value: number) => {
     //     return value.toLocaleString('en-US', {
@@ -86,6 +87,9 @@ const Crud = () => {
         if (!usuario.id) {
             usuarioService.inserir(usuario)
                 .then((response) => {
+                    setUsuarioDialog(false);
+                    setUsuario(usuarioVazio);
+                    setUsuarios([]);
                     console.log(response);
                     toast.current?.show({
                         severity: 'success',
@@ -100,37 +104,26 @@ const Crud = () => {
                     detail: 'Erro ao cadastrar usuário.'
                 })
             })
+        } else {
+            usuarioService.alterar(usuario)
+                .then((response) => {
+                    setUsuarioDialog(false);
+                    setUsuario(usuarioVazio);
+                    setUsuarios([]);
+                    toast.current?.show({
+                        severity: 'success',
+                        summary: 'Sucesso!',
+                        detail: 'Usuário alterado com sucesso!'
+                    })
+                }).catch((error) => {
+                    console.log(error);
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Erro ao alterar usuário.'
+                })
+            })
         }
-
-    //     if (usuario.nome.trim()) {
-    //         let _usuarios = [...(usuarios as any)];
-    //         let _usuario = { ...usuario };
-    //         if (usuario.id) {
-    //             const index = findIndexById(usuario.id);
-    //
-    //             _usuarios[index] = _usuario;
-    //             toast.current?.show({
-    //                 severity: 'success',
-    //                 summary: 'Successful',
-    //                 detail: 'Product Updated',
-    //                 life: 3000
-    //             });
-    //         } else {
-    //             _usuario.id = createId();
-    //             // _usuario.image = 'product-placeholder.svg';
-    //             _usuarios.push(_usuario);
-    //             toast.current?.show({
-    //                 severity: 'success',
-    //                 summary: 'Successful',
-    //                 detail: 'Product Created',
-    //                 life: 3000
-    //             });
-    //         }
-    //
-    //         setUsuarios(_usuarios as any);
-    //         setUsuarioDialog(false);
-    //         setUsuario(usuarioVazio);
-    //     }
     };
 
     const editUsuario = (usuario: Projeto.Usuario) => {
@@ -144,6 +137,26 @@ const Crud = () => {
     };
 
     const deleteUsuario = () => {
+        usuarioService.excluir(usuario.id)
+            .then((response) => {
+                setUsuario(usuarioVazio);
+                setDeleteUsuarioDialog(false);
+                setUsuarios([]);
+            toast.current?.show({
+                    severity: 'success',
+                    summary: 'Sucesso!',
+                    detail: 'Usuário excluído.',
+                    life: 3000
+            });
+        }).catch((error) => {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Erro!',
+                detail: 'Erro ao excluir usuário.',
+                life: 3000
+            });
+        })
+
         // let _usuarios = (usuarios as any)?.filter((val: any) => val.id !== usuario.id);
         // setUsuarios(_usuarios);
         // setDeleteUsuarioDialog(false);

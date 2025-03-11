@@ -18,4 +18,8 @@ export class UsuarioService{
     alterar(usuario: Projeto.Usuario) {
         return axiosInstance.put("/usuario", usuario);
     }
+
+    excluir(id?: number | string) {
+        return axiosInstance.delete("/usuario/" + id);
+    }
 }
