@@ -5,24 +5,19 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import { FileUpload } from 'primereact/fileupload';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
-import React, { useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
-import { Demo } from '@/types';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Projeto } from '@/types/projeto';
 import { UsuarioService } from '@/service/UsuarioService';
 import { Simulate } from 'react-dom/test-utils';
 import error = Simulate.error;
 
+
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Crud = () => {
+const Usuario = () => {
     let usuarioVazio: Projeto.Usuario = {
         id: '',
         nome: '',
@@ -36,12 +31,12 @@ const Crud = () => {
     const [deleteUsuarioDialog, setDeleteUsuarioDialog] = useState(false);
     const [deleteUsuariosDialog, setDeleteUsuariosDialog] = useState(false);
     const [usuario, setUsuario] = useState<Projeto.Usuario>(usuarioVazio);
-    const [selectedUsuarios, setSelectedUsuarios] = useState(null);
+    const [selectedUsuarios, setSelectedUsuarios] = useState<Projeto.Usuario[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const usuarioService = new UsuarioService();
+    const usuarioService = useMemo(() => new UsuarioService(), []) ;
 
     useEffect(() => {
         if (usuarios?.length == 0) {
@@ -53,14 +48,7 @@ const Crud = () => {
                 console.log(error);
             });
         }
-    }, [usuarios]);
-
-    // const formatCurrency = (value: number) => {
-    //     return value.toLocaleString('en-US', {
-    //         style: 'currency',
-    //         currency: 'USD'
-    //     });
-    // };
+    }, [usuarioService, usuarios]);
 
     const openNew = () => {
         setUsuario(usuarioVazio);
@@ -156,39 +144,7 @@ const Crud = () => {
                 life: 3000
             });
         })
-
-        // let _usuarios = (usuarios as any)?.filter((val: any) => val.id !== usuario.id);
-        // setUsuarios(_usuarios);
-        // setDeleteUsuarioDialog(false);
-        // setUsuario(usuarioVazio);
-        // toast.current?.show({
-        //     severity: 'success',
-        //     summary: 'Successful',
-        //     detail: 'Product Deleted',
-        //     life: 3000
-        // });
     };
-
-    // const findIndexById = (id: number) => {
-    //     let index = -1;
-    //     for (let i = 0; i < (usuarios as any)?.length; i++) {
-    //         if ((usuarios as any)[i].id === id) {
-    //             index = i;
-    //             break;
-    //         }
-    //     }
-    //
-    //     return index;
-    // };
-
-    // const createId = () => {
-    //     let id = '';
-    //     let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    //     for (let i = 0; i < 5; i++) {
-    //         id += chars.charAt(Math.floor(Math.random() * chars.length));
-    //     }
-    //     return id;
-    // };
 
     const exportCSV = () => {
         dt.current?.exportCSV();
@@ -199,40 +155,35 @@ const Crud = () => {
     };
 
     const deleteSelectedUsuarios = () => {
-        // let _usuarios = (usuarios as any)?.filter((val: any) => !(selectedUsuarios as any)?.includes(val));
-        // setUsuarios(_usuarios);
-        // setDeleteUsuariosDialog(false);
-        // setSelectedUsuarios(null);
-        // toast.current?.show({
-        //     severity: 'success',
-        //     summary: 'Successful',
-        //     detail: 'Products Deleted',
-        //     life: 3000
-        // });
-    };
+        Promise.all(selectedUsuarios.map(async (_usuario) => {
+            await usuarioService.excluir(usuario.id);
 
-    // const onCategoryChange = (e: RadioButtonChangeEvent) => {
-    //     let _usuario = { ...usuario };
-    //     _usuario['category'] = e.value;
-    //     setUsuario(_usuario);
-    // };
+        })).then((response) => {
+            setUsuarios([]);
+            setSelectedUsuarios([]);
+            setDeleteUsuariosDialog(false);
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sucesso!',
+                detail: 'Usuários excluídos com sucesso.',
+                life: 3000
+            });
+        }).catch((error) => {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Erro!',
+                detail: 'Erro ao excluir usuários.',
+                life: 3000
+            })
+        });
+    };
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
         let _usuario = { ...usuario };
-        // @ts-ignore
         _usuario[`${name}`] = val;
-
         setUsuario(_usuario);
     };
-
-    // const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-    //     const val = e.value || 0;
-    //     let _usuario = { ...usuario };
-    //     _usuario[`${name}`] = val;
-    //
-    //     setUsuario(_usuario);
-    // };
 
     const leftToolbarTemplate = () => {
         return (
@@ -272,24 +223,6 @@ const Crud = () => {
         );
     };
 
-    // const imageBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Image</span>
-    //             <img src={`/demo/images/product/${rowData.image}`} alt={rowData.image} className="shadow-2" width="100" />
-    //         </>
-    //     );
-    // };
-
-    // const priceBodyTemplate = (rowData: Projeto.Usuario) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Price</span>
-    //             {formatCurrency(rowData.price as number)}
-    //         </>
-    //     );
-    // };
-
     const loginBodyTemplate = (rowData: Projeto.Usuario) => {
         return (
             <>
@@ -307,24 +240,6 @@ const Crud = () => {
             </>
         );
     };
-
-    // const ratingBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Reviews</span>
-    //             <Rating value={rowData.rating} readOnly cancel={false} />
-    //         </>
-    //     );
-    // };
-
-    // const statusBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Status</span>
-    //             <span className={`product-badge status-${rowData.inventoryStatus?.toLowerCase()}`}>{rowData.inventoryStatus}</span>
-    //         </>
-    //     );
-    // };
 
     const actionBodyTemplate = (rowData: Projeto.Usuario) => {
         return (
@@ -393,11 +308,6 @@ const Crud = () => {
                         <Column field="nome" header="Nome" sortable body={nomeBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
                         <Column field="login" header="Login" sortable body={loginBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
                         <Column field="email" header="E-mail" sortable body={emailBodyTemplate} headerStyle={{ minWidth: '15rem' }}></Column>
-                        {/*<Column header="Image" body={imageBodyTemplate}></Column>*/}
-                        {/*<Column field="price" header="Price" body={priceBodyTemplate} sortable></Column>*/}
-                        {/*<Column field="category" header="Category" sortable body={loginBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>*/}
-                        {/*<Column field="rating" header="Reviews" body={ratingBodyTemplate} sortable></Column>*/}
-                        {/*<Column field="inventoryStatus" header="Status" body={statusBodyTemplate} sortable headerStyle={{ minWidth: '10rem' }}></Column>*/}
                         <Column body={actionBodyTemplate} headerStyle={{ minWidth: '10rem' }}></Column>
                     </DataTable>
 
@@ -488,4 +398,4 @@ const Crud = () => {
     );
 };
 
-export default Crud;
+export default Usuario;
