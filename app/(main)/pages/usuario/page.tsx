@@ -12,8 +12,6 @@ import { classNames } from 'primereact/utils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Projeto } from '@/types/projeto';
 import { UsuarioService } from '@/service/UsuarioService';
-import { Simulate } from 'react-dom/test-utils';
-import error = Simulate.error;
 
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
@@ -88,7 +86,7 @@ const Usuario = () => {
                 console.log(error);
                 toast.current?.show({
                     severity: 'error',
-                    summary: 'Error',
+                    summary: 'Error!',
                     detail: 'Erro ao cadastrar usuário.'
                 })
             })
@@ -156,8 +154,9 @@ const Usuario = () => {
 
     const deleteSelectedUsuarios = () => {
         Promise.all(selectedUsuarios.map(async (_usuario) => {
-            await usuarioService.excluir(usuario.id);
-
+            if (_usuario.id) {
+                await usuarioService.excluir(_usuario.id);
+            }
         })).then((response) => {
             setUsuarios([]);
             setSelectedUsuarios([]);
