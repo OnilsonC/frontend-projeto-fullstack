@@ -8,5 +8,11 @@ declare namespace Projeto {
         senha: string;
         email: string;
     };
+
+    type Recurso = {
+        id?: number | string;
+        nome: string;
+        chave: string;
+    }
 }
 

@@ -1,11 +1,10 @@
 import axios from 'axios';
-import { Projeto } from '@/types/projeto';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:8080'
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL_API
 });
 
-export class BaseService{
+export class BaseService {
 
     url: string;
 
@@ -18,7 +17,7 @@ export class BaseService{
     }
 
     buscaPorId(id: number | string) {
-        return axiosInstance.get(this.url + "/" + id);
+        return axiosInstance.get(this.url + '/' + id);
     }
 
     inserir(objeto: any) {
@@ -30,6 +29,6 @@ export class BaseService{
     }
 
     excluir(id?: number | string) {
-        return axiosInstance.delete(this.url + "/" + id);
+        return axiosInstance.delete(this.url + '/' + id);
     }
 }

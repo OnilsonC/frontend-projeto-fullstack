@@ -12,70 +12,69 @@ import { classNames } from 'primereact/utils';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Projeto } from '@/types/projeto';
 import { UsuarioService } from '@/service/UsuarioService';
+import { RecursoService } from '@/service/RecursoService';
 
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Usuario = () => {
-    let usuarioVazio: Projeto.Usuario = {
+const Recurso = () => {
+    let recursoVazio: Projeto.Recurso = {
         id: '',
         nome: '',
-        login: '',
-        senha: '',
-        email: ''
+        chave: ''
     };
 
-    const [usuarios, setUsuarios] = useState<Projeto.Usuario[]>([]);
-    const [usuarioDialog, setUsuarioDialog] = useState(false);
-    const [deleteUsuarioDialog, setDeleteUsuarioDialog] = useState(false);
-    const [deleteUsuariosDialog, setDeleteUsuariosDialog] = useState(false);
-    const [usuario, setUsuario] = useState<Projeto.Usuario>(usuarioVazio);
-    const [selectedUsuarios, setSelectedUsuarios] = useState<Projeto.Usuario[]>([]);
+    const [recursos, setRecursos] = useState<Projeto.Recurso[]>([]);
+    const [recursoDialog, setRecursoDialog] = useState(false);
+    const [deleteRecursoDialog, setDeleteRecursoDialog] = useState(false);
+    const [deleteRecursosDialog, setDeleteRecursosDialog] = useState(false);
+    const [recurso, setRecurso] = useState<Projeto.Recurso>(recursoVazio);
+    const [selectedRecursos, setSelectedRecursos] = useState<Projeto.Recurso[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const usuarioService = useMemo(() => new UsuarioService(), []) ;
+    const recursoService = useMemo(() => new RecursoService(), []) ;
 
     useEffect(() => {
-        if (usuarios?.length == 0) {
-            usuarioService.listarTodos()
+        if (recursos?.length == 0) {
+            recursoService.listarTodos()
                 .then((response) => {
                     console.log(response);
-                    setUsuarios(response.data);
+                    setRecursos(response.data);
                 }).catch((error) => {
                 console.log(error);
             });
         }
-    }, [usuarioService, usuarios?.length]);
+    }, [recursoService, recursos?.length]);
 
     const openNew = () => {
-        setUsuario(usuarioVazio);
+        setRecurso(recursoVazio);
         setSubmitted(false);
-        setUsuarioDialog(true);
+        setRecursoDialog(true);
     };
 
     const hideDialog = () => {
         setSubmitted(false);
-        setUsuarioDialog(false);
+        setRecursoDialog(false);
     };
 
-    const hideDeleteUsuarioDialog = () => {
-        setDeleteUsuarioDialog(false);
+    const hideDeleteRecursoUsuarioDialog = () => {
+        setDeleteRecursoDialog(false);
     };
 
-    const hideDeleteUsuariosDialog = () => {
-        setDeleteUsuariosDialog(false);
+    const hideDeleteRecursosDialog = () => {
+        setDeleteRecursosDialog(false);
     };
 
-    const saveUsuario = () => {
+    const saveRecurso = () => {
         setSubmitted(true);
 
-        if (!usuario.id) {
-            usuarioService.inserir(usuario)
+        if (!recurso.id) {
+            recursoService.inserir(recurso)
                 .then((response) => {
-                    setUsuarioDialog(false);
-                    setUsuario(usuarioVazio);
-                    setUsuarios([]);
+                    setRecursoDialog(false);
+                    setRecurso(recursoVazio);
+                    setRecursos([]);
                     console.log(response);
                     toast.current?.show({
                         severity: 'success',
@@ -91,18 +90,18 @@ const Usuario = () => {
                 })
             })
         } else {
-            usuarioService.alterar(usuario)
+            recursoService.alterar(recurso)
                 .then((response) => {
-                    setUsuarioDialog(false);
-                    setUsuario(usuarioVazio);
-                    setUsuarios([]);
+                    setRecursoDialog(false);
+                    setRecurso(recursoVazio);
+                    setRecursos([]);
                     toast.current?.show({
                         severity: 'success',
                         summary: 'Sucesso!',
                         detail: 'Usuário alterado com sucesso!'
                     })
                 }).catch((error) => {
-                    console.log(error);
+                console.log(error);
                 toast.current?.show({
                     severity: 'error',
                     summary: 'Error',
@@ -112,29 +111,29 @@ const Usuario = () => {
         }
     };
 
-    const editUsuario = (usuario: Projeto.Usuario) => {
-        setUsuario({ ...usuario });
-        setUsuarioDialog(true);
+    const editRecurso = (recurso: Projeto.Recurso) => {
+        setRecurso({ ...recurso });
+        setRecursoDialog(true);
     };
 
-    const confirmDeleteUsuario = (usuario: Projeto.Usuario) => {
-        setUsuario(usuario);
-        setDeleteUsuarioDialog(true);
+    const confirmDeleteRecurso = (recurso: Projeto.Recurso) => {
+        setRecurso(recurso);
+        setDeleteRecursoDialog(true);
     };
 
-    const deleteUsuario = () => {
-        usuarioService.excluir(usuario.id)
+    const deleteRecurso = () => {
+        recursoService.excluir(recurso.id)
             .then((response) => {
-                setUsuario(usuarioVazio);
-                setDeleteUsuarioDialog(false);
-                setUsuarios([]);
-            toast.current?.show({
+                setRecurso(recursoVazio);
+                setDeleteRecursoDialog(false);
+                setRecursos([]);
+                toast.current?.show({
                     severity: 'success',
                     summary: 'Sucesso!',
                     detail: 'Usuário excluído.',
                     life: 3000
-            });
-        }).catch((error) => {
+                });
+            }).catch((error) => {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Erro!',
@@ -149,18 +148,18 @@ const Usuario = () => {
     };
 
     const confirmDeleteSelected = () => {
-        setDeleteUsuariosDialog(true);
+        setDeleteRecursosDialog(true);
     };
 
-    const deleteSelectedUsuarios = () => {
-        Promise.all(selectedUsuarios.map(async (_usuario) => {
-            if (_usuario.id) {
-                await usuarioService.excluir(_usuario.id);
+    const deleteSelectedRecursos = () => {
+        Promise.all(selectedRecursos.map(async (_recurso) => {
+            if (_recurso.id) {
+                await recursoService.excluir(_recurso.id);
             }
         })).then((response) => {
-            setUsuarios([]);
-            setSelectedUsuarios([]);
-            setDeleteUsuariosDialog(false);
+            setRecursos([]);
+            setSelectedRecursos([]);
+            setDeleteRecursosDialog(false);
             toast.current?.show({
                 severity: 'success',
                 summary: 'Sucesso!',
@@ -179,9 +178,9 @@ const Usuario = () => {
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
-        let _usuario = { ...usuario };
-        _usuario[`${name}`] = val;
-        setUsuario(_usuario);
+        let _recurso = { ...recurso };
+        _recurso[`${name}`] = val;
+        setRecurso(_recurso);
     };
 
     const leftToolbarTemplate = () => {
