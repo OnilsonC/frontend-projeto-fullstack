@@ -13,6 +13,11 @@ declare namespace Projeto {
         id?: number | string;
         nome: string;
         chave: string;
-    }
+    };
+
+    type Perfil = {
+        id?: number | string;
+        descricao: string;
+    };
 }
 
