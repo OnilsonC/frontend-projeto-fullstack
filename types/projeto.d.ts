@@ -19,5 +19,11 @@ declare namespace Projeto {
         id?: number | string;
         descricao: string;
     };
+
+    type PerfilUsuario = {
+        id?: number | string;
+        usuario: Usuario;
+        perfil: Perfil
+    }
 }
 
